@@ -7,8 +7,8 @@ void setup() {
   noStroke();
 }
 float x = 0;
-float valX = 250;
-float valZ = 250;
+float valX;
+float valZ;
 float count = 1;
 
 void draw() {
@@ -26,6 +26,8 @@ void draw() {
   ambientLight(102, 102, 102); 
   background(200);
   translate(width/2, height/2, 0);
+  valX = width/2;
+  valZ = height/2;
   rotateX(PI/2);
   
   if(valX < 0) {valX = 0;}
