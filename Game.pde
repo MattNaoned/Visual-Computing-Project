@@ -5,6 +5,11 @@ void settings() {
 
 void setup() {
   noStroke();
+  pushMatrix();
+  translate(width/2, height/2, 0);
+  valX = width/2;
+  valZ = height/2;
+  popMatrix();
 }
 float x = 0;
 float valX;
@@ -26,8 +31,7 @@ void draw() {
   ambientLight(102, 102, 102); 
   background(200);
   translate(width/2, height/2, 0);
-  valX = width/2;
-  valZ = height/2;
+  
   rotateX(PI/2);
   
   if(valX < 0) {valX = 0;}
@@ -37,16 +41,6 @@ void draw() {
   
   float rx = map(valX, 0, width, -PI/3, PI/3);
   float rz = map(valZ, 0, height, -PI/3, PI/3);
-  /*float niqueSaMere = map(x,-PI/3,PI/3,0,width);
-  println(niqueSaMere);*/
-  /*
-  if(rx < -PI/3) {rx = -PI/3;}
-  else if(rx > PI/3) {rx = PI/3;}
-  if(rz < -PI/3) {rz = -PI/3;}
-  else if(rz > PI/3) {rz = PI/3;}
-  */
-  println(rx);
-  println(rz);
 
   pushMatrix();
   rotateX(rx);
