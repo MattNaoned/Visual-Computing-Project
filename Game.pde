@@ -1,13 +1,15 @@
 float depth = 2000;
 float valX;
 float valZ;
-float gravityConstant = 1.1;
+float gravityConstant = 0.981;
 PVector gravityForce = new PVector(0, 0, 0);
 float count = 1;
 Mover mover = new Mover();
 float boxSize = 800;
 float boxDepth = 40;
 ArrayList<PVector> cylinderPositions = new ArrayList();
+float cylinderBaseSize = 50;
+
 
 
 void settings() {
@@ -64,35 +66,39 @@ void draw() {
   friction.mult(-1);
   friction.normalize();
   friction.mult(frictionMagnitude);
-
-if(!(keyPressed == true && keyCode == SHIFT)){
-  pushMatrix();
-    rotateX(rx);
-    rotateZ(rz);
-    box(boxSize, boxDepth, boxSize);
-
-    mover.velocity.add(gravityForce);
-    mover.velocity.add(friction);
-    mover.update();
-    mover.checkEdges();
-    mover.checkCylinderCollision(mover.location);
-   /* for(int i = 0; i < cylinderPositions.size() ; i++){
-      float xToBeMapped = cylinderPositions.get(i).x;
-      float yToBeMapped = cylinderPositions.get(i).y;
-      float x = map(xToBeMapped, 0, width, ?, ?);
-      float x = map(yToBeMapped, 0, height, ?, ?);
-      Cylinder c = new Cylinder(x, y);
-      c.display();
-    }*/
-    mover.display();
-  popMatrix();
-}else{
-  pushMatrix();
-  rotateX(PI/2);    
-  box(boxSize, boxDepth, boxSize);
-  mover.display();
-  popMatrix();
-}
+  boolean pause = false;
+  
+    pushMatrix();
+    if(!(keyPressed == true && keyCode == SHIFT)){
+      rotateX(rx);
+      rotateZ(rz);
+      pause = false;
+    }else {
+      rotateX(-PI/2);
+      pause = true;
+    }
+      fill(255, 255, 0);
+      box(boxSize, boxDepth, boxSize);
+    if(!pause){
+      mover.velocity.add(gravityForce);
+      mover.velocity.add(friction);
+      mover.update();
+      mover.checkEdges();
+    }
+      mover.checkCylinderCollision();
+      for(int i = 0; i < cylinderPositions.size() ; i++){
+        /*float xToBeMapped = cylinderPositions.get(i).x;
+        float yToBeMapped = cylinderPositions.get(i).y;
+        float x = map(xToBeMapped, 0, width, -boxSize/2, boxSize/2);
+        float y = map(yToBeMapped, 0, height, -boxSize/2, boxSize/2);*/
+        Cylinder c = new Cylinder(cylinderPositions.get(i).x, cylinderPositions.get(i).y);
+        c.display();
+      }
+      
+       mover.display();
+     
+    popMatrix();
+  
   
   
 }
@@ -120,8 +126,15 @@ void mouseWheel(MouseEvent event) {
 
 void mouseClicked() {
   if(keyPressed  && keyCode == SHIFT){
-    cylinderPositions.add(new PVector(mouseX, mouseY));
-    Cylinder c = new Cylinder(mouseX, mouseY);
-    c.display();
+    float x = map(mouseX, 160, 340, -boxSize/2 , boxSize/2);
+    float y  = map(mouseY, 160, 340, -boxSize/2, boxSize/2);
+    if(!((mouseX < 160 || mouseX > 340 || (mouseY < 160) || mouseY > 340))){
+      cylinderPositions.add(new PVector(x, y));
+      Cylinder c = new Cylinder(x, y);
+    }
   }
+}
+
+boolean distinctCylinders(){
+  return true;
 }

@@ -1,6 +1,7 @@
 class Mover{
   PVector location;
   PVector velocity;
+  float radius = 50;
   
   Mover(){
     location = new PVector(0, -60, 0);
@@ -13,9 +14,10 @@ class Mover{
   
   void display() {
     noStroke();
+    fill(255, 102, 255);
     pushMatrix();
     translate(location.x, location.y, location.z);
-    sphere(50);
+    sphere(radius);
     popMatrix();
   }
   
@@ -38,12 +40,21 @@ class Mover{
     }
   }
   
-  void checkCylinderCollision(PVector ballPosition) {
-    PVector n;
-    /*for(int i = 0 ; i < cylinderPositions.size() ; i++) {
-      if((ballPosition.x == cylinderPositions.get(i).x) && (ballPosition.y == cylinderPositions.get(i).y)){
-        velocity = velocity.sub((velocity.dot(n).mult(2)).dot(n));
+  void checkCylinderCollision() {
+    float collisionDistance = radius + cylinderBaseSize/2;
+    println(collisionDistance);
+    
+    for(int i = 0 ; i < cylinderPositions.size() ; i++){
+      float posX = cylinderPositions.get(i).x;
+      float posZ = cylinderPositions.get(i).y;
+      PVector check = new PVector(posX, mover.location.y, posZ); 
+      if(mover.location.dist(check) <= collisionDistance){
+        
+        PVector n = new PVector(mover.location.x - posX,  mover.location.z - posZ);
+        n.normalize();
+        velocity = velocity.sub(n.mult(2).mult(velocity.dot(n)));
+        
       }
-    }*/
+    }
   }
 }

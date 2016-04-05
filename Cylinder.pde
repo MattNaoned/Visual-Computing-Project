@@ -1,16 +1,15 @@
 class Cylinder{
   float posX;
-  float posY;
-  float cylinderBaseSize = 50;
-  float cylinderHeight = 50;
+  float posZ;
+  float cylinderHeight = 150;
   int cylinderResolution = 40;
   PShape openCylinder = new PShape();
   PShape topSurface = new PShape();
   PShape bottomSurface = new PShape();
   
-  Cylinder(float posX, float posY) {
+  Cylinder(float posX, float posZ) {
     this.posX = posX;
-    this.posY = posY;
+    this.posZ = posZ;
     
     float angle;
     float[] x = new float[cylinderResolution + 1];
@@ -49,9 +48,13 @@ class Cylinder{
    }
    
    void display() {
-     translate(posX, posY, 0);
+     pushMatrix();
+     fill(120, 180, 0);
+     rotateX(PI/2);
+     translate(posX, posZ, 0);
      shape(openCylinder);
      shape(bottomSurface);
      shape(topSurface);
+     popMatrix();
    }
 }
