@@ -1,14 +1,16 @@
 float score = 0;
 float lastScore = 0;
+float scoreMax = 100;
 float depth = 2000;
 float valX;
 float valZ;
 float gravityConstant = 0.981;
 PVector gravityForce = new PVector(0, 0, 0);
-float count = 1;
+float tippingSpeed = 1;
 Mover mover = new Mover();
 float boxSize = 800;
 float boxDepth = 40;
+boolean pause = false;
 float cylinderBaseSize = 50;
 ArrayList<Cylinder> listCylinders = new ArrayList();
 PGraphics mySurface;
@@ -16,10 +18,12 @@ PGraphics topView;
 PGraphics scoreBoard;
 PGraphics barchart;
 HScrollbar hscroll;
-
+ArrayList<Float> listScore = new ArrayList();
+int counter = 0;
+float nbRect = 0;
 
 void settings() {
-  size(500, 500, P3D);
+  size(800, 800, P3D);
 }
 
 void setup() {
@@ -55,7 +59,7 @@ void draw() {
 
   hscroll.update();
   hscroll.display();
-  println(hscroll.getPos());
+  //println(hscroll.getPos());
 
   pushMatrix();
   if (keyPressed == true) {
@@ -65,7 +69,7 @@ void draw() {
       depth += 50;
     }    
   }
-    camera(width/2, height/2, depth, 250, 250, 0, 0, 1, 0);
+    camera(width/2, height/2, depth, 400, 400, 0, 0, 1, 0);
     directionalLight(50, 100, 125, 0, 1, 0);
     ambientLight(102, 102, 102);  
     
@@ -94,7 +98,7 @@ void draw() {
     friction.mult(-1);
     friction.normalize();
     friction.mult(frictionMagnitude);
-    boolean pause = false;
+    
   
     pushMatrix();
     if(!(keyPressed == true && keyCode == SHIFT)){
@@ -119,7 +123,7 @@ void draw() {
       
       fill(153, 255, 153);
       
-      for(Cylinder c : listCylinders) {                 // Endroit qui fait tout déconner
+      for(Cylinder c : listCylinders) {                
         c.display();
       }
      
@@ -131,31 +135,31 @@ void draw() {
 
 void mouseDragged() {
   if(mouseY <= 4*height/5){
-    valX += (pmouseY - mouseY)*count;
-    valZ += (mouseX - pmouseX)*count;
+    valX += (pmouseY - mouseY)*tippingSpeed;
+    valZ += (mouseX - pmouseX)*tippingSpeed;
   } 
 }
 
 void mouseWheel(MouseEvent event) {
   float e = event.getCount();
   if (e < 0) {
-    count += 0.1;
+    tippingSpeed += 0.1;
   } else if (e > 0) {
-    count -= 0.1;
+    tippingSpeed -= 0.1;
   }
-  if (count < 0.2) {
-    count = 0.2;
-  } else if (count > 1.5) {
-    count = 1.5;
+  if (tippingSpeed < 0.2) {
+    tippingSpeed = 0.2;
+  } else if (tippingSpeed > 1.5) {
+    tippingSpeed = 1.5;
   }
-  println(count);
+  println(tippingSpeed);
 }
 
 void mouseClicked() {
   if(keyPressed  && keyCode == SHIFT){
-    float x = map(mouseX, 160, 340, -boxSize/2 , boxSize/2);
-    float y  = map(mouseY, 160, 340, -boxSize/2, boxSize/2);
-    if(!((mouseX < 160 || mouseX > 340 || (mouseY < 160) || mouseY > 340))){
+    float x = map(mouseX, 260, 540, -boxSize/2 , boxSize/2);
+    float y  = map(mouseY, 260, 540, -boxSize/2, boxSize/2);
+    if(!((mouseX < 260 || mouseX > 540 || (mouseY < 260) || mouseY > 540))){
       Cylinder c = new Cylinder(x, y);
       if(distinctCylinders(c)){
         listCylinders.add(c);
@@ -224,10 +228,48 @@ void drawBarchart() {
  barchart.beginDraw();
  barchart.stroke(0);
  barchart.strokeWeight(4);
- barchart.rect(0, 0, width - height/3 - 3* width/60 - width/40, height/7);
  barchart.fill(250);
+ barchart.rect(0, 0, width - height/3 - 3* width/60 - width/40, height/7);
+ float WEDGE = 1;
+ float SMALL_RECT_SIZE = height/140;
+ float NB_RECT_MAX_X = (width - height/3 - 3* width/60 - width/40)/(WEDGE + SMALL_RECT_SIZE);
+ float NB_RECT_MAX_Y = (height/7)/(WEDGE + SMALL_RECT_SIZE);
  
- 
+ if(!pause){
+   if(counter++ < 10){
+     if(score > 0){
+       listScore.add(score);
+     }else{
+       listScore.add(0.0);
+     }
+     if(nbRect >= NB_RECT_MAX_Y){
+       scoreMax *= 1.5;
+     }
+   }
+   counter = 0;
+ }
+ int minX = max(0,(int) (listScore.size() - NB_RECT_MAX_X/(2*hscroll.getPos())));
+ float scorePerRect = scoreMax / NB_RECT_MAX_Y;
+ boolean scoreTooLow = true;
+ boolean scoreTooHigh = false;
+ float x = 0;
+ for(int i = max(0, minX) ; i < listScore.size() ; i++){
+   x += SMALL_RECT_SIZE + WEDGE;
+   float currentScore = listScore.get(i);
+   if(currentScore > scoreMax/2){
+    scoreTooLow = false;
+   }else if(currentScore > scoreMax) {
+     scoreTooHigh = true;
+   }
+   nbRect = currentScore/scorePerRect;
+   for(int j = 0 ; j < nbRect ; j++) {
+    barchart.noStroke();
+    barchart.fill(255, 0, 0);
+    barchart.rect(2*x*hscroll.getPos(), height/7 - (j+1)*(SMALL_RECT_SIZE+WEDGE) - WEDGE, SMALL_RECT_SIZE*2*hscroll.getPos(), SMALL_RECT_SIZE);
+   }
+ }
+ if(scoreTooLow && scoreMax > 100) scoreMax /= 1.5;
+ if(scoreTooHigh) scoreMax *= 1.5;
  
  barchart.endDraw();
 }
