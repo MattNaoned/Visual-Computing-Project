@@ -1,33 +1,33 @@
 class HScrollbar {
-  float barWidth; //Bar’s width in pixels
-  float barHeight; //Bar’s height in pixels
-  float xPosition; //Bar’s x position in pixels
-  float yPosition; //Bar’s y position in pixels
-  float sliderPosition, newSliderPosition; //Position of slider
-  float sliderPositionMin, sliderPositionMax; //Max and min values of slider
-  boolean mouseOver; //Is the mouse over the slider?
-  boolean locked; //Is the mouse clicking and dragging the slider now?
-  /**
-  * @brief Creates a new horizontal scrollbar
-  *
-  * @param x The x position of the top left corner of the bar in pixels
-  * @param y The y position of the top left corner of the bar in pixels
-  * @param w The width of the bar in pixels
-  * @param h The height of the bar in pixels
-  */
-  HScrollbar (float x, float y, float w, float h) {
-  barWidth = w;
-  barHeight = h;
-  xPosition = x;
-  yPosition = y;
-  sliderPosition = xPosition + barWidth/2 - barHeight/2;
-  newSliderPosition = sliderPosition;
-  sliderPositionMin = xPosition;
-  sliderPositionMax = xPosition + barWidth - barHeight;
-  }
-  /**
-  * @brief Updates the state of the scrollbar according to the mouse movement
-  */
+float barWidth; //Bar’s width in pixels
+float barHeight; //Bar’s height in pixels
+float xPosition; //Bar’s x position in pixels
+float yPosition; //Bar’s y position in pixels
+float sliderPosition, newSliderPosition; //Position of slider
+float sliderPositionMin, sliderPositionMax; //Max and min values of slider
+boolean mouseOver; //Is the mouse over the slider?
+boolean locked; //Is the mouse clicking and dragging the slider now?
+/**
+* @brief Creates a new horizontal scrollbar
+*
+* @param x The x position of the top left corner of the bar in pixels
+* @param y The y position of the top left corner of the bar in pixels
+* @param w The width of the bar in pixels
+* @param h The height of the bar in pixels
+*/
+HScrollbar (float x, float y, float w, float h) {
+barWidth = w;
+barHeight = h;
+xPosition = x;
+yPosition = y;
+sliderPosition = xPosition + barWidth/2 - barHeight/2;
+newSliderPosition = sliderPosition;
+sliderPositionMin = xPosition;
+sliderPositionMax = xPosition + barWidth - barHeight;
+}
+/**
+* @brief Updates the state of the scrollbar according to the mouse movement
+*/
 void update() {
 if (isMouseOver()) {
 mouseOver = true;
@@ -99,4 +99,3 @@ float getPos() {
 return (sliderPosition - xPosition)/(barWidth - barHeight);
 }
 }
-  
