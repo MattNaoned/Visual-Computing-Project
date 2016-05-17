@@ -17,37 +17,37 @@ float IMG_SIZE;
 float lower;
 float upper;
 ArrayList<Integer> bestCandidates = new ArrayList();
+QuadGraph graph = new QuadGraph();
 
 void settings() {
-  size(640, 480);
+  size(800, 600);
 }
 void setup() {
 
-  //  img1 = loadImage("board1.jpg");
+  img1 = loadImage("board1.jpg");
   img2 = loadImage("board2.jpg");
   img3 = loadImage("board3.jpg");
   img4 = loadImage("board4.jpg");
   debug = loadImage("debug2.png");
-  result = createImage(640, 480/*img1.width, img1.height*/, RGB);
-  IMG_SIZE = 480 * 640;
-  //IMG_SIZE = img1.height * img1.width;
+  result = createImage(img2.width, img2.height, RGB);
+  IMG_SIZE = img1.height * img1.width;
   thresholdBar = new HScrollbar(0, 580, 800, 20);
   hueLowerBound = new HScrollbar(0, 580, 800, 20);
   hueUpperBound = new HScrollbar(0, 550, 800, 20);
-
+  /*
   String[] cameras = Capture.list();
-  if (cameras.length == 0) {
-    println("There are no cameras available for capture.");
-    exit();
-  } else {
-    println("Available cameras:");
-    for (int i = 0; i < cameras.length; i++) {
-      println(cameras[i]);
-    }
-    cam = new Capture(this, cameras[0]);
-    cam.start();
-  }
-
+   if (cameras.length == 0) {
+   println("There are no cameras available for capture.");
+   exit();
+   } else {
+   println("Available cameras:");
+   for (int i = 0; i < cameras.length; i++) {
+   println(cameras[i]);
+   }
+   cam = new Capture(this, cameras[0]);
+   cam.start();
+   }
+   */
 
   //noLoop(); // no interactive behaviour: draw() will be called only once.
 }
@@ -55,64 +55,54 @@ void draw() {
 
   counter++;
 
-  //threshold = thresholdBar.getPos() * 255.0;
-  //binaryThreshold(img, threshold);
-  //result = invertBinaryThreshold(img, threshold);
-  //result = hueMap(img);
-
-  //thresholdBar.display();
-  //thresholdBar.update();
-  /*
-  if(hueLowerBound.getPos() <= hueUpperBound.getPos()){
-   lower = hueLowerBound.getPos() * 255;
-   upper = hueUpperBound.getPos() * 255;
-   }else {
-   upper = hueLowerBound.getPos() * 255;
-   lower = hueUpperBound.getPos() * 255;
-   }
-   
-   hueLowerBound.display();
-   hueLowerBound.update();
-   hueUpperBound.display();
-   hueUpperBound.update();
-   */
-
-  //image(result, 0, 0)
-
-  /*
   result.loadPixels();
-   colorThreshold(img1, 117, 138);
-   result.updatePixels();
-   PImage sobelImage = sobel(result);
-   //binaryThreshold(result, 200);
-   image(img1, 0, 0);
-   hough(sobelImage, 6);
-   getIntersections(vectors);
-   */
-  if (cam.available() == true) {
-    cam.read();
-  }
-  img1 = cam.get();
-  image(img1, 0, 0);
-  if (counter > 1000) {
-    println(img1.pixels[0]);
-  }
-  result.loadPixels();
-  //colorThreshold(img1, 117, 138);
+
+  colorThreshold(img1, 100, 138);
   result.updatePixels();
-  hough(sobel(result), 6);
+  binaryThreshold(result, 38, 137);
+
+  saturationThreshold(result, 116, 263);
+  PImage convolutedImage = convolute(result);
+
+  image(img1, 0, 0);
+  hough(sobel(convolutedImage), 4);
+  graph.build(vectors, img2.width, img2.height);
+  graph.findCycles();
+  graph.displayQuads(vectors);
   getIntersections(vectors);
 }  
-
-void binaryThreshold(PImage img, float thresh) {
+void saturationThreshold(PImage img, float lower, float upper) {
   loadPixels();
+  if (lower > upper) {
+    float temp = lower;
+    lower = upper;
+    upper = temp;
+  }
   for (int i = 0; i < img.width * img.height; i++) {
-    if (brightness(img.pixels[i]) >= thresh) {
+    if (saturation(img.pixels[i]) >= lower && saturation(img.pixels[i]) <= upper) {
       result.pixels[i] = color(255);
     } else {
       result.pixels[i] = color(0);
     }
   }
+
+  updatePixels();
+}
+void binaryThreshold(PImage img, float lower, float upper) {
+  loadPixels();
+  if (lower > upper) {
+    float temp = lower;
+    lower = upper;
+    upper = temp;
+  }
+  for (int i = 0; i < img.width * img.height; i++) {
+    if (brightness(img.pixels[i]) >= lower && brightness(img.pixels[i]) <= upper) {
+      result.pixels[i] = color(img.pixels[i]);
+    } else {
+      result.pixels[i] = color(0);
+    }
+  }
+
   updatePixels();
 }
 
@@ -141,7 +131,7 @@ void colorThreshold(PImage img, float lower, float upper) {
   for (int i = 1; i < IMG_SIZE; i++) {
 
     if (hue(img.pixels[i]) >= lower && hue(img.pixels[i]) <= upper) {
-      result.pixels[i] = color(255);
+      result.pixels[i] = color(img.pixels[i]);
     } else {
       result.pixels[i] = color(0);
     }
@@ -154,7 +144,7 @@ PImage convolute(PImage img) {
     { 9, 12, 9 }};
   float weight = 99.f;
   // create a greyscale image (type: ALPHA) for output
-  PImage result = createImage(img.width, img.height, RGB);
+  PImage result = createImage(img.width, img.height, ALPHA);
   // kernel size N = 3
   //
   // for each (x,y) pixel in the image:
@@ -364,7 +354,7 @@ ArrayList<PVector> getIntersections(ArrayList<PVector> lines) {
       float d = cos(line2.y) * sin(line1.y) - cos(line1.y) * sin(line2.y);
       float x = (line2.x*sin(line1.y) - line1.x * sin(line2.y))/d;
       float y = (-line2.x*cos(line1.y) + line1.x*cos(line2.y))/d;
-
+      intersections.add(new PVector(x, y));
 
       // draw the intersection
       fill(255, 128, 0);
