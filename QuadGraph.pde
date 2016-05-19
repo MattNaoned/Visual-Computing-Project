@@ -1,4 +1,4 @@
-import java.util.Collections;
+import java.util.Collections; //<>//
 import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
@@ -342,7 +342,7 @@ class QuadGraph {
   void displayQuads(List<PVector> lines) {
     for (int[] quad : quads) {
       PVector l1 = lines.get(quad[0]);
-      PVector l2 = lines.get(quad[1]); //<>//
+      PVector l2 = lines.get(quad[1]);
       PVector l3 = lines.get(quad[2]);
       PVector l4 = lines.get(quad[3]);
       // (intersection() is a simplified version of the
@@ -352,17 +352,23 @@ class QuadGraph {
       PVector c23 = intersection(l2, l3);
       PVector c34 = intersection(l3, l4);
       PVector c41 = intersection(l4, l1);
-      if (isConvex(c12, c23, c34, c41) && nonFlatQuad(c12, c23, c34, c41) && validArea(c12,c23,c34,c41,550000,100000)) {
+      if (isConvex(c12, c23, c34, c41) && nonFlatQuad(c12, c23, c34, c41) && validArea(c12, c23, c34, c41, 550000, 100000)) {
         // Choose a random, semi-transparent colour
-        Random random = new Random();
-        fill(color(min(255, random.nextInt(300)), 
-          min(255, random.nextInt(300)), 
-          min(255, random.nextInt(300)), 50));
+        /*Random random = new Random();
+         fill(color(min(255, random.nextInt(300)), 
+         min(255, random.nextInt(300)), 
+         min(255, random.nextInt(300)), 50));*/
+        noFill();
+        stroke(204, 102, 0);
         quad(c12.x, c12.y, c23.x, c23.y, c34.x, c34.y, c41.x, c41.y);
+        fill(255, 128, 0);
+        ellipse(c12.x, c12.y, 10, 10);
+        ellipse(c23.x, c23.y, 10, 10);
+        ellipse(c34.x, c34.y, 10, 10);
+        ellipse(c41.x, c41.y, 10, 10);
       }
     }
   }
-
 }
 
 class CWComparator implements Comparator<PVector> {
