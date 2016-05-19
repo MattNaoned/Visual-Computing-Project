@@ -6,6 +6,9 @@ PImage img1;
 PImage img2;
 PImage img3;
 PImage img4;
+PImage fourCorners;
+PImage houghAccumulator;
+PImage sobelImage;
 ArrayList<PVector> vectors = new ArrayList();
 PImage result;
 PImage debug;
@@ -20,7 +23,7 @@ ArrayList<Integer> bestCandidates = new ArrayList();
 QuadGraph graph = new QuadGraph();
 
 void settings() {
-  size(800, 600);
+  size(2000, 600);
 }
 void setup() {
 
@@ -29,47 +32,34 @@ void setup() {
   img3 = loadImage("board3.jpg");
   img4 = loadImage("board4.jpg");
   debug = loadImage("debug2.png");
-  result = createImage(img2.width, img2.height, RGB);
-  IMG_SIZE = img1.height * img1.width;
+  result = createImage(800, 600, RGB);
+  IMG_SIZE = img1.width * img1.height;
   thresholdBar = new HScrollbar(0, 580, 800, 20);
   hueLowerBound = new HScrollbar(0, 580, 800, 20);
   hueUpperBound = new HScrollbar(0, 550, 800, 20);
-  /*
-  String[] cameras = Capture.list();
-   if (cameras.length == 0) {
-   println("There are no cameras available for capture.");
-   exit();
-   } else {
-   println("Available cameras:");
-   for (int i = 0; i < cameras.length; i++) {
-   println(cameras[i]);
-   }
-   cam = new Capture(this, cameras[0]);
-   cam.start();
-   }
-   */
+
 
   //noLoop(); // no interactive behaviour: draw() will be called only once.
 }
 void draw() {
 
-  counter++;
 
   result.loadPixels();
-
   colorThreshold(img1, 100, 138);
   result.updatePixels();
   binaryThreshold(result, 38, 137);
 
   saturationThreshold(result, 116, 263);
   PImage convolutedImage = convolute(result);
-
+  PImage sobelImage = sobel(convolutedImage);
   image(img1, 0, 0);
-  hough(sobel(convolutedImage), 4);
-  graph.build(vectors, img2.width, img2.height);
-  graph.findCycles();
-  graph.displayQuads(vectors);
+  hough(sobelImage, 4);
+  /* graph.build(vectors, img1.width, img1.height);
+   graph.findCycles();
+   graph.displayQuads(vectors);*/
   getIntersections(vectors);
+  image(houghAccumulator, img1.width, 0);
+  image(sobelImage, img1.width + houghAccumulator.width, 0);
 }  
 void saturationThreshold(PImage img, float lower, float upper) {
   loadPixels();
@@ -258,6 +248,15 @@ ArrayList<PVector> hough(PImage edgeImg, int nLines) {
       }
     }
   }
+
+  houghAccumulator = createImage(phiDim + 2, rDim + 2, ALPHA);
+  for (int i = 0; i < accumulator.length; i++) {
+    houghAccumulator.pixels[i] = color(min(255, accumulator[i]));
+  }
+  // You may want to resize the accumulator to make it easier to see:
+  houghAccumulator.resize(400, 400);
+  houghAccumulator.updatePixels();
+
   bestCandidates.clear();
   // size of the region we search for a local maximum
   int neighbourhood = 30;
